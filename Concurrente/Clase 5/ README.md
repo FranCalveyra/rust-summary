@@ -132,10 +132,10 @@ public class Counter {
     void increment() {
         semaphore.acquire();  // wait or down or P
 
-        int localCounter = value;
-        localCounter = localCounter + 1;
+        int local_counter = value;
+        local_counter = local_counter + 1;
 
-        value = localCounter;
+        value = local_counter;
         semaphore.release();  // signal or up or V
     }
 }

@@ -16,3 +16,10 @@ Ver unidades:
 Nota: lo de la última clase no lo incluyo porque se entiende perfecto del slide, además de que lo de Unicode es innecesario incluirlo. Es simplemente leer de ahí.
 
 Lo de Macros está perfectamente explicado ahí
+
+# Concurrente
+Agregué las cosas de concurrente en una carpeta aparte. \
+Van a ver todo bien estructurado. 
+
+Si hace falta algo, avísenme.
+>Hay un par de cosas que me skippeé pq no las vi importantes, como lo de Scheduling, Ley de Moore, algunos ejemplos, etc.

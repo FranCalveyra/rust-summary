@@ -50,9 +50,9 @@ impl<T> ConcurrentCircularBuffer<T> {
         while data.size == data.capacity {
             data = self.not_full.wait(data).unwrap();
         }
-
-        data.buffer[data.head] = Some(element);
-        data.head = (data.head + 1) % data.capacity;
+        let i = data.head;
+        data.buffer[i] = Some(element);
+        data.head = (i + 1) % data.capacity;
         data.size += 1;
 
         self.not_empty.notify_one();
@@ -63,8 +63,9 @@ impl<T> ConcurrentCircularBuffer<T> {
             data = self.not_empty.wait(data).unwrap();
         }
 
-        let result = data.buffer[data.tail].take();
-        data.tail = (data.tail + 1) % data.capacity;
+        let i = data.tail;
+        let result = data.buffer[i].take();
+        data.tail = (i + 1) % data.capacity;
         data.size -= 1;
 
         self.not_empty.notify_one();

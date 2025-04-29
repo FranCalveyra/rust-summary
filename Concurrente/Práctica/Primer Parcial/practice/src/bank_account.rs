@@ -17,12 +17,12 @@ impl BankAccount for MutexBankAccount {
         }
     }
     fn deposit(&self, amount: f64) {
-        if let Ok(balance) = self.balance.lock() {
+        if let Ok(mut balance) = self.balance.lock() {
             *balance += amount;
         }
     }
     fn withdraw(&self, amount: f64) {
-        if let Ok(balance) = self.balance.lock() {
+        if let Ok(mut balance) = self.balance.lock() {
             if *balance < amount {
                 println!("Insufficient balance!");
                 return;
@@ -50,13 +50,13 @@ impl BankAccount for RWBankAccount {
     }
 
     fn deposit(&self, amount: f64) {
-        if let Ok(balance) = self.balance.write() {
+        if let Ok(mut balance) = self.balance.write() {
             *balance += amount
         }
     }
 
     fn withdraw(&self, amount: f64) {
-        if let Ok(balance) = self.balance.write() {
+        if let Ok(mut balance) = self.balance.write() {
             if *balance < amount {
                 println!("Insufficient amount");
                 return;

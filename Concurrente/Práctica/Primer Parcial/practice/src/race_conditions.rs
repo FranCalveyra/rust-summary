@@ -15,7 +15,7 @@ impl Counter {
         let mut local_counter = self.value.clone();
         println!("Current thread {} reads counter value as: {}", thread::current().name().unwrap(), local_counter);
         local_counter +=1;
-        self.value = local_counter;
+        // self.value = local_counter;
         println!("Current thread {} now reads counter value as: {}", thread::current().name().unwrap(), self.value)
     }
 }

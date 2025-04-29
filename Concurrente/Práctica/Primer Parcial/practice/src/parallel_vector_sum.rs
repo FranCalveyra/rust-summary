@@ -1,21 +1,22 @@
 use std::thread;
+use std::thread::JoinHandle;
 
 fn sum_parallel(nums: Vec<i32>, m: usize) -> i32 {
     let mut parts = split_into_parts(nums, m);
 
     let first = parts.remove(0);
-    let mut result: i32 = first.iter().sum();
+    let result: i32 = first.iter().sum();
 
-    let handles: Vec<i32> = parts
+    let handles: Vec<JoinHandle<i32>> = parts
         .into_iter()
-        .map(|chunk| {
-            thread::spawn(move || chunk.iter().sum())
-                .join()
-                .unwrap_or(0)
-        })
+        .map(|chunk| thread::spawn(move || chunk.iter().sum()))
         .collect();
 
-    result + handles.iter().sum::<i32>()
+    result
+        + handles
+            .into_iter()
+            .map(|h| h.join().unwrap_or(0))
+            .sum::<i32>()
 }
 
 fn split_into_parts<T>(mut vec: Vec<T>, m: usize) -> Vec<Vec<T>> {

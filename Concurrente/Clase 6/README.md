@@ -37,7 +37,7 @@ thread::spawn(||{
         if let Some(item) = q.pop_front() {
             println!("Popped: {item}", );
         } else {
-            not_empty.wait(q); // <--- Wait
+            q = not_empty.wait(q).unwrap(); // <--- Wait
         }
     }
 });

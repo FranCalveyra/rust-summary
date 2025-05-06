@@ -8,45 +8,52 @@ Similar a los semáforos, tienen 2 operaciones principales:
 ### Ejemplo de uso
 ```rust
 // Sin condvar:
-let queue = Mutex::new(VecDeque::new());
+use std::sync::{Mutex, Arc};
+fn main(){
+    let queue = Mutex::new(VecDeque::new());
 
-thread::scope(|s| {
-   s.spawn(|| {
+    thread::scope( | s| {
+        s.spawn( | | {
             loop { // Busy loop !!
                 let mut q = queue.lock().unwrap();
                 if let Some(item) = q.pop_front() {
-                    println!("Popped: {item}", );
+                println ! ("Popped: {item}", );
                 }
             }
         });
-
+    
     for i in 0.. {
-        queue.lock().unwrap().push_back(i);
-        thread::sleep(Duration::from_secs(1));
+    queue.lock().unwrap().push_back(i);
+    thread::sleep(Duration::from_secs(1));
+    } 
     }
-});
+    );
+}
 ```
 ```rust
 // Con condvar:
-let queue = Mutex::new(VecDeque::new());
-let not_empty = Condvar::new();
+use std::sync::{Mutex, Condvar};
+fn main() {
+    let queue = Mutex::new(VecDeque::new());
+    let not_empty = Condvar::new();
 
-thread::spawn(||{
-    loop {
-        let mut q = queue.lock().unwrap();
-        if let Some(item) = q.pop_front() {
-            println!("Popped: {item}", );
-        } else {
-            q = not_empty.wait(q).unwrap(); // <--- Wait
+    thread::spawn(|| {
+        loop {
+            let mut q = queue.lock().unwrap();
+            if let Some(item) = q.pop_front() {
+                println!("Popped: {item}", );
+            } else {
+                q = not_empty.wait(q).unwrap(); // <--- Wait
+            }
         }
-    }
-});
+    });
 
-// Pushear elementos:
-for i in 0.. {
-    queue.lock().unwrap().push_back(i);
-    not_empty.notify_one(); // <-- notify the first thread waiting
-    thread::sleep(Duration::from_secs(1));
+    // Pushear elementos:
+    for i in 0.. {
+        queue.lock().unwrap().push_back(i);
+        not_empty.notify_one(); // <-- notify the first thread waiting
+        thread::sleep(Duration::from_secs(1));
+    }
 }
 ```
 
@@ -101,8 +108,6 @@ the address spaces of all receiver processes
 ### Mensajes síncronos vs. asíncronos
 ![img.png](messages.png)
 
-Aquí tienes la tabla traducida al español:
-
 | Característica        | Síncrono                                  | Asíncrono                                    |
 | --------------------- | ----------------------------------------- | -------------------------------------------- |
 | Sincronización        | El emisor espera a que el receptor obtenga el mensaje | El emisor continúa sin esperar               |
@@ -133,10 +138,11 @@ fn channels_example() {
 }
 ```
 ```rust
-// Create a Channel:
-let (sender, receiver) = mpsc::channel();
+fn other_example(){
+    // Create a Channel:
+    let (sender, receiver) = mpsc::channel();
 
-// Spawn many threads
+    // Spawn many threads
     for tid in 0..10 {
         let s = sender.clone();   // <--- Clone the sender part
         thread::spawn(move || {
@@ -146,4 +152,5 @@ let (sender, receiver) = mpsc::channel();
             s.send(msg).unwrap();
         });
     }
+}
 ```

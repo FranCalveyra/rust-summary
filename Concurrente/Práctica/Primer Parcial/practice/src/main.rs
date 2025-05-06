@@ -1,4 +1,5 @@
 use crate::bounded_buffer::{BoundedBuffer, Consumer, Producer};
+use crate::channels::pipeline;
 use crate::philosophers::philosophers::{Philosopher, Table};
 use std::sync::Arc;
 use std::thread;
@@ -13,9 +14,10 @@ mod parallel_vector_sum;
 mod philosophers;
 mod queue;
 mod race_conditions;
+mod channels;
 
 fn main() {
-    bounded_buffer_main();
+    pipeline()
 }
 
 fn bounded_buffer_main() {

@@ -1,2 +1,4 @@
 .idea
 rust-summary.iml
+**/target/
+**/.env

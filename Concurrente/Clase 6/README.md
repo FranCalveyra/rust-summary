@@ -111,8 +111,8 @@ class Account {
 
 ## Pasaje de mensajes
 
-La idea de los mensajes es evitar la comunicación entre threads mediante la compartición de memoria. Esto lo logra "
-intentándolo al revés", es decir, compartiendo memoria a través de la comunicación.
+La idea de los mensajes es evitar la comunicación entre threads mediante la compartición de memoria. Esto lo logra
+"intentándolo al revés", es decir, compartiendo memoria a través de la comunicación.
 
 - En el pasaje de mensajes, la información a compartir es copiada físicamente desde el espacio de direcciones del
   proceso remitente a los espacios de direcciones de todos los procesos destinatarios

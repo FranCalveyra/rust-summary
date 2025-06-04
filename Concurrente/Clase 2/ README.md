@@ -83,7 +83,7 @@ fn hello() {
 
 El Scope es una forma de agrupar threads, de forma tal que se ejecuten en un mismo contexto. \
 Además, el Scope permite que los threads se compartan variables entre ellos, sin necesidad de usar `Arc` o `Mutex` (para
-casos de sólo lectura).
+casos de solo lectura).
 
 Una vez termina el Scope, los threads se unen automáticamente, por lo que no es necesario llamar a `join` manualmente.
 

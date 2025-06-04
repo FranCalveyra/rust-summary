@@ -98,7 +98,7 @@ No creo que se meta con toda la parte de scheduling, al menos en el contexto te�
 - Program Counter: dirección de la siguiente instrucción
 - Registros de la CPU en ese momento
 - Stack: variables locales, parámetros de funciones, y direcciones de retorno
-- Infomación de manejo de memoria y otros.
+- Información de manejo de memoria y otros.
 
 ---
 # Concurrencia vs Paralelismo vs Interleaving
@@ -110,7 +110,7 @@ No creo que se meta con toda la parte de scheduling, al menos en el contexto te�
 
 ## Paralelismo
 - El paralelismo se refiere a la ejecución de múltiples tareas o procesos simultáneamente.
-- Esto requiere hardware con múltiples unidades de procesamiento, como procesadores multinúcleo.
+- Esto requiere hardware con múltiples unidades de procesamiento, como procesadores multi-núcleo.
 - En los sistemas paralelos, las tareas se ejecutan literalmente al mismo tiempo, como líneas de ensamblaje paralelas en una fábrica trabajando simultáneamente.
 > El paralelismo trata sobre la ejecución.
 

@@ -12,7 +12,7 @@ Un lock (o mutex de exclusión mutua) es una primitiva de sincronización que pr
 
 - **Mutex (Exclusión Mutua)** : Un lock básico que permite que solo un hilo acceda a un recurso a la vez.
 - **Reentrant Lock**: Puede ser adquirido múltiples veces por el mismo hilo sin causar un deadlock.
-- **Read/Write Locks**: Permite que múltiples lectores accedan al recurso simultáneamente pero requiere acceso exclusivo para escritura.
+- **Read/Write Locks**: Permite que múltiples lectores accedan al recurso simultáneamente, pero requiere acceso exclusivo para escritura.
 
 Acá en el medio pone el ejemplo de la cuenta de banco, de cómo estos 3 tipos de lock se pueden usar para este caso,
 etc. \

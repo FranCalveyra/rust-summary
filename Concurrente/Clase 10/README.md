@@ -5,7 +5,7 @@ librería que se llama Akka por cuestiones de simplicidad
 
 ## Sincronización tradicional
 
-Varios tghreads se pisan entre sí. Esto se resuelve:
+Varios threads se pisan entre sí. Esto se resuelve:
 
 - Demarcando regiones de código con semánticas para "no molestar"
 - Asegurando que el acceso a estado compartido sea protegido
@@ -48,6 +48,7 @@ Es OOP + Mensajes, en definitiva. Forzado dentro de un sistema donde todo tiene 
 - Es una PartialFunction, lo que significa que puede no manejar cualquier posible input
 - Toma un mensaje de cualquier tipo, y no devuelve nada ('Unit')
  */
+type Receive = PartialFunction[Any, Unit]
 ```
 
 Receive es esencialmente una función que recibe cualquier parámetro y no devuelve nada.
@@ -68,9 +69,8 @@ trait Actor {
   def receive: Receive
 }
 ```
-
-Los `traits` en Scala son equivalentes a las interfaces de Java, o a los `traits` (justamente) de Rust
-`receive` es un lambda.
+- Los `traits` en Scala son equivalentes a las interfaces de Java, o a los `traits` (justamente) de Rust
+- `receive` es un lambda.
 
 ### Un Actor Simple
 
@@ -311,7 +311,7 @@ class Counter extends Actor {
 }
 ```
 
-- Se crea un lamdba con un parámetro preseteado
+- Se crea un lambda con un parámetro preseteado
     - En el fondo guarda el valor del parámetro en la definición del lambda
 - Cuando se instancia el Counter, n = 0
 
@@ -332,6 +332,7 @@ trait ActorContext {
 ```
 
 ## Aplicación completa de actores
+
 ```scala
 class CounterMain extends Actor {
   // Create an instance of the Counter actor as a child of this actor
@@ -355,6 +356,7 @@ class CounterMain extends Actor {
 ```
 
 ### El main sobre el que corre:
+
 ```scala
 object CounterMainApp extends App {
 
@@ -389,26 +391,28 @@ Están aislados: no se puede acceder al estado ni a su comportamiento de manera 
 lado de otro actor (via pasaje de mensajes usando direcciones conocidas, sus `ActorRef`)
 
 - Cada actor conoce su **referencia** (`self`)
-- Crear un actor devuelve su **propia referencia**
+- Crear un actor devuelve su **propia referencia**.
 - Las referencias (o direcciones) se pueden compartir y pasar entre mensajes (ej: usando `sender`)
 
 Este modelo fuerza aislamiento y previene problemas de memoria compartida como condiciones de carrera
 
 ### Orden de evaluación de los Actores
 
-
 * Cada actor dentro de sí mismo es single-threaded, con lo cual los mensajes van llegando secuencialmente
-  * Llamar a `context.become` cambia su comportamiento frente al próximo mensaje 
-  * Cada mensaje es **atómico**, ya que no existe el interleaving entre actores
+    * Llamar a `context.become` cambia su comportamiento frente al próximo mensaje
+    * Cada mensaje es **atómico**, ya que no existe el interleaving entre actores
 
 * Los actores procesan un mensaje a la vez
     * No hay overlap entre manejadores de mensajes
     * Los cambios de comportamiento aplican al próximo mensaje
     * La atomicidad asegura actualizaciones seguras del estado local
+
 > Es muy parecido al `synchronized` de Java, solo que sin bloqueo; en su lugar se encolan los mensajes.
 
 ## Trade-Offs
+
 > Esto lo anoté en base a lo que me dijeron los profes
+
 - Te atás al asincronismo, no tenés respuestas inmediatas
 - No existe memoria compartida (**esto es importante**)
     - Cada actor tiene sus propias variables y espacios de memoria alocados

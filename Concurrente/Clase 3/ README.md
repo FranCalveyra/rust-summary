@@ -6,7 +6,7 @@ Después de eso se espera que el thread termine y se junten los resultados.
 Si queremos calcular $2*k*a*t*e^{-a * t}$, podemos:
 - Primero calcular $2*k*a*t$
 - Después calcular $e^{-a * t}$
-- Finalmente multiplicar los resultados de los dos pasos anteriores.
+- Finalmente, multiplicar los resultados de los dos pasos anteriores.
 
 ### Implementación secuencial
 ```rust

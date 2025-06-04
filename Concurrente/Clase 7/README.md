@@ -84,8 +84,8 @@ Refiere a cómo se ordenan las instrucciones a nivel procesador.
 - Sequentially Consistent (`SeqCst`): más restrictivo, pero es el más lento. Debe funcionar para TODOS LOS CASOS.
     - Java lo usa por defecto.
     - No se puede reordenar las operaciones de lectura y escritura.
-- `Release`: más restrictivo que el `Relaxed`, pero menos que el `Acquire`
-- `Acquire`: más restrictivo que el `Release`, pero menos que el `SeqCst`
+- `Release`: más restrictivo que `Relaxed`, pero menos que `Acquire`
+- `Acquire`: más restrictivo que `Release`, pero menos que `SeqCst`
 - `Relaxed`: menos restrictivo
 
 ##### Operaciones típicas

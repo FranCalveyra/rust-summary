@@ -36,7 +36,7 @@
 - No se espera "activamente" a que dicha operación termine, sino que se "manda a hacer en el background"
 - Se usan los recursos de manera más eficiente
 
-### Qué pasa si una función depende del resultado de otra?
+### ¿Qué pasa si una función depende del resultado de otra?
 
 ```kotlin
 fun coffeeBreak() {
@@ -77,9 +77,9 @@ fun drink(coffee: Coffee) { }
 
 - `makeCoffee()` es lanzable en otro thread, tranquilamente.
 
-## De Sync a Async
+## De Sync hacia Async
 
-Para transfomar una función de Sync a `async` (o al menos su firma), se debe:
+Para transformar una función de Sync a `async` (o al menos su firma), se debe:
 
 - No devolver un valor
 - Tomar como parámetro una **continuación** que defina qué hacer una vez devuelto el valor computado.

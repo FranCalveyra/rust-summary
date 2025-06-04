@@ -63,7 +63,8 @@ Esto le sirve al lenguaje para hacer algún tipo de chequeo.
 ```scala
 // Se define un trait llamado Actor
 trait Actor {
-  // Comentarios
+  // Este método abstracto DEBE ser implementado por el Actor en cuestión
+  // Define la lógica con la que se reciben los mensajes (qué se hace cuando se recibe un mensaje)
   def receive: Receive
 }
 ```
@@ -103,8 +104,9 @@ class Counter extends Actor {
 }
 ```
 
-- `!` es el operador para mandar mensajes en Akka
-- customer es un `ActorRef`
+- `!` es el operador para mandar mensajes en `Akka`
+    - Akka es la librería de Scala para actores
+- `customer` es un `ActorRef`
     - get le manda el count a un actor que puede recibir un entero en su método `receive`
 
 #### Ejemplo para apoyar lo anterior
@@ -123,24 +125,22 @@ class Printer extends Actor {
 **Uso**:
 
 ```scala
-// Se inicializa
-counter = Counter() //?
+// Inicializar el sistema de actores (posteriormente se ve cómo)
+// Supongamos que counter y printer ya está inicializados anteriormente
 counter ! "incr"
 counter ! "incr"
 counter ! "incr"
 
 // Se le pide al contador que envíe su valor actual al printer
-printer = Printer()
-
 counter ! ("get", printer)
 ```
 
-## Cómo se mandan los mensajes?
+## ¿Cómo se mandan los mensajes?
 
 ```scala
 trait Actor {
   // 'self' es una referencia implícita a su propia instancia de actor
-  // Le permite al actor referirse a su propia dirección sinn pasarla de manera explícita
+  // Le permite al actor referirse a su propia dirección sin pasarla de manera explícita
   implicit val self: ActorRef
 
   // 'sender' nos da acceso a quien envía el mensaje que actualmente está siendo procesado
@@ -154,17 +154,19 @@ trait Actor {
 
 ```scala
 abstract class ActorRef {
-  // El "bang" o ! es la manera princi[al de enviarle un mensaje a otro actor
+  // El "bang" o ! es la manera principal de enviarle un mensaje a otro actor
   // - 'msg: Any': se puede mandar cualquier tipo de mensaje
   // - 'implicit sender': el sender se pasa de manera implícita, de tal manera que el receptor sabe quién lo mandó
   def !(msg: Any)(implicit sender: ActorRef = Actor.noSender): Unit
 
-  // Tell es un alias para el !
+  // `tell` es un alias para el !
   // Hace que el llamado sea más explícito al pasar tanto el mensaje como el remitente
   def tell(msg: Any, sender: ActorRef) = this.!(msg)(sender)
 }
 ```
 
+- En definitiva, un `ActorRef` es una referencia utilizable hacia un `Actor`
+    - Se suelen pensar como la "dirección de mail" del actor en cuestión
 - Justamente como el sender está implícito, si no le paso nada me lo mando a mí mismo
 - `implicit` es syntax sugar de Scala
 
@@ -182,6 +184,7 @@ class Counter extends Actor {
 ```
 
 Un ejemplo para verlo de afuera sería:
+> Nota: este ejemplo me lo crafteé yo
 
 ```scala
 class Multiplier extends Actor {
@@ -191,7 +194,7 @@ class Multiplier extends Actor {
   }
 }
 
-multiplier = Multiplier()
+// Suponer multiplier ya inicializado
 counter ! "incr"
 counter ! "incr"
 multiplier ! ("ask", counter) // --> esto va a multiplicar por 2 recursivamente de manera infinita el valor de counter
@@ -208,6 +211,11 @@ class Printer extends Actor {
     // Acá muestra que cuando le llega un mensaje cualquiera lo imprime
     // y después le manda al sender un mensaje con un re texto
     case count: Int =>
+      // Imprimir el count que le llegó
+      println(s"[${self.path.name}] received count: $count")
+      // Le mando un ACK a quien me lo envió
+      // `sender` me da acceso a la referencia de quien sea que me mandó el mensaje en primer lugar
+      sender ! s"Acknowledged count $count from ${self.path.name}"
   }
 }
 ```
@@ -221,10 +229,11 @@ class CounterClient(printer: ActorRef) extends Actor {
 
   // Este método se ejecuta on init del objeto
   override def preStart(): Unit = {
-    // envía un número al printer usando ! (async fire-and-forget)
+    // envía un número al printer usando '!' (asynchronous fire-and-forget)
     // 'self' se va a usar implícitamente como sender
     // Esta instancia de CounterClient va a ser el sender la primera vez
     printer ! 42
+    // Le mando otro número de manera explícita usando 'tell' y 'self'
     printer.tell(99, self)
   }
 }
@@ -245,7 +254,7 @@ Dentro de lo que puede hacer, le puedo pedir al contexto:
 - Acceder a referencias de sí mismo y de los remitentes
 - "Frenarse" a sí mismo o a otros actores
 
-El actor describe ...
+El actor describe el comportamiento, la ejecución la realiza su `ActorContext`
 
 ### En código
 
@@ -255,10 +264,16 @@ trait ActorContext {
   // Me permite actualizarle el receive al actor actual
   def become(behavior: Receive, discardOld: Boolean = true): Unit
 
-  // Vuelve para atrás al último comportamiento guardado en caso de que discardOld era falso en el llamado del become
+  // Vuelve para atrás al último comportamiento guardado en caso de que
+  // discardOld era `false` en el llamado del become
   def unbecome(): Unit
 }
 ```
+
+- Otros métodos útiles del contexto pueden ser:
+    - `actorOf(...)` para instanciar actores hijos
+    - `stop(...)` para frenar un actor
+    - `self`, `sender`, `parent`, `children`
 
 ### Ejemplo
 
@@ -283,7 +298,7 @@ class ToggleActor extends Actor {
 
 ### Functional Counter
 
-Se puede definir a la clase Counter de manera funcional:
+Se puede definir a la clase Counter de manera funcional (sin variables mutables):
 
 ```scala
 class Counter extends Actor {
@@ -307,8 +322,8 @@ Definiendo el trait de ActorContext...
 ```scala
 trait ActorContext {
   // Se spawnea un actor hijo del actor actual
-  //- 'p' 
-  //- 'name'
+  // - 'p' : es un objeto `Props`, define el tipo de actor y los parámetros de su constructor 
+  // - 'name': es un nombre único para este nuevo actor dentro del contexto actual
   def actorOf(p: Props, name: String): ActorRef
 
   // Se frena o termina el actor
@@ -316,41 +331,87 @@ trait ActorContext {
 }
 ```
 
-[Insertar apuntes de MainApp y demás]
+## Aplicación completa de actores
+```scala
+class CounterMain extends Actor {
+  // Create an instance of the Counter actor as a child of this actor
+  val counter: ActorRef = context.actorOf(Props[Counter], "counter")
 
-## Qué es el modelo del que venimos hablando?
+  // Send some increment messages to the counter
+  counter ! "incr"
+  counter ! "incr"
+  counter ! "incr"
+
+  // Ask the counter to send its current value back (reply goes to this actor)
+  counter ! "get"
+
+  // This actor handles the reply from the counter
+  def receive: Receive = {
+    case count: Int =>
+      println(s"Count was $count") // Print the count
+      context.stop(self) // Stop this actor (ends the app)
+  }
+}
+```
+
+### El main sobre el que corre:
+```scala
+object CounterMainApp extends App {
+
+  // Create the actor system
+  val system = ActorSystem("CounterSystem")
+
+  // Create the main actor that orchestrates everything
+  system.actorOf(Props[CounterMain], "main")
+
+  // The system will shut down after the CounterMain actor stops (not shown here)
+  // For a clean shutdown, you could use CoordinatedShutdown or watch termination manually
+}
+```
+
+## ¿Qué es el modelo del que venimos hablando?
 
 Siempre que un actor reciba un mensaje puede hacer cualquier combinación de las siguientes acciones:
 
 - **Crear mensajes**: comunicarse con otros actores de manera asíncrona
-- **Crear actores** (hijos de sí mismo): crear actores hijos para delegar trabajo o estructurar el sistema de manera jerárquica
+- **Crear actores** (hijos de sí mismo): crear actores hijos para delegar trabajo o estructurar el sistema de manera
+  jerárquica
 - **Cambiar su comportamiento para próximos mensajes de manera dinámica**
 
 Los actores encapsulan tanto estado como comportamiento, permitiendo concurrencia sin locks y segura al reaccionar a los
 mensajes.
 
 ## Encapsulación de los Actores
-No tienen getters ni setters, tengo que manejar el estado a través de mensajes
 
-Están aislados: no se puede acceder al estado ni a su comportamiento de manera directa, sólamente interactuando desde el lado de otro actor
-- Cada actor conoce su referencia (`self`)
+No tienen getters ni setters, se debe manejar su estado a través de mensajes
+
+Están aislados: no se puede acceder al estado ni a su comportamiento de manera directa, sólamente interactuando desde el
+lado de otro actor (via pasaje de mensajes usando direcciones conocidas, sus `ActorRef`)
+
+- Cada actor conoce su **referencia** (`self`)
+- Crear un actor devuelve su **propia referencia**
+- Las referencias (o direcciones) se pueden compartir y pasar entre mensajes (ej: usando `sender`)
 
 Este modelo fuerza aislamiento y previene problemas de memoria compartida como condiciones de carrera
 
 ### Orden de evaluación de los Actores
 
-* Títulito 
-  * Cada actor dentro de sí mismo es single-threaded, con lo cual los mensajes van llegando secuencialmente 
+
+* Cada actor dentro de sí mismo es single-threaded, con lo cual los mensajes van llegando secuencialmente
+  * Llamar a `context.become` cambia su comportamiento frente al próximo mensaje 
   * Cada mensaje es **atómico**, ya que no existe el interleaving entre actores
 
 * Los actores procesan un mensaje a la vez
-  * No hay overlap entre manejadores de mensajes
-  * Los cambios de comportamiento aplican al próximo mensaje
-  * La atomicidad asegura actualizaciones seguras del estado local
+    * No hay overlap entre manejadores de mensajes
+    * Los cambios de comportamiento aplican al próximo mensaje
+    * La atomicidad asegura actualizaciones seguras del estado local
+> Es muy parecido al `synchronized` de Java, solo que sin bloqueo; en su lugar se encolan los mensajes.
+
 ## Trade-Offs
+> Esto lo anoté en base a lo que me dijeron los profes
 - Te atás al asincronismo, no tenés respuestas inmediatas
 - No existe memoria compartida (**esto es importante**)
-  - Cada actor tiene sus propias variables y espacios de memoria alocados
-  - Solo se comparte memoria a través de mensajes
+    - Cada actor tiene sus propias variables y espacios de memoria alocados
+    - Solo se comparte memoria a través de mensajes
 - Añade una capa de complejidad importante
-  - Es más difícil de debuggear
+    - Es más difícil de debuggear

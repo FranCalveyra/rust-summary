@@ -14,8 +14,6 @@ En este sentido, como el Garbage Collection en el modelo de Actores se hace por 
 o mejor dicho, \
 dejás de tener todas las complicaciones que tiene el primer caso.
 
-[Ver slide y completar los apuntes de la clase pasada del Orden de Evaluación y demás]
-
 ## Bank Account - Revisitado con actores
 
 ```scala
@@ -51,8 +49,8 @@ class BankAccount extends Actor {
 ```
 
 - El pattern matching se hace por el tipo de objeto, en este caso
-- El if en el caso del `Withdraw` hace que falle (o lo deriva al caso default, mejor dicho) si el `amount` es **mayor**
-  al `balance`
+- El if en el caso del `Withdraw` hace que falle (o lo deriva al caso default, mejor dicho) si `amount` es **mayor**
+  a `balance`
 
 ### Colaboración de actores
 
@@ -109,14 +107,14 @@ class WireTransfer extends Actor {
       todo.
 - Si falló hago 2 cosas:
     - Propago el fallo
-    - Freno al actor (esto en realidad se resuelve de otra manera)
+    - Freno al actor (esto en realidad se puede resolver de otra manera)
 - El depósito en principio no debería fallar, porque no depende de si tenés saldo o no
     - Pero se modela (por las dudas?)
 
 ## Garantías de entrega de mensajes
 
 - Si no se piden explícitamente, las garantías de entrega son más bajas
-- _"Todo se puede ir al diablo en cualquier momento"_ a.k.a _"Let it crash"_
+- _"Todo se puede ir al diablo en cualquier momento"_ a.k.a. _"Let it crash"_
 - La idea es que pienses que como que todo puede fallar, te asegures de que dejás el sistema en un estado consistente
 - La entrega del mensaje requiere disponibilidad eventual del canal y del receptor
 
@@ -147,11 +145,11 @@ Los mensajes soportan confiabilidad:
 **La confiabilidad solo puede ser asegurada por acknowledgement a nivel lógica de negocio**
 
 ### En el caso de la transferencia...
-
+Para volverla confiable habría que:
 - Registrar actividades del `WireTransfer` a almacenamiento persistente
-- Cada transferencia tiene un ID único
-- Se le añade un ID al Withdraw y al Deposit
-- Se almacenan IDs de acciones completadas en la `BankAccount`
+- Hacer que cada transferencia tenga un ID único
+- Añadirle un ID al Withdraw y al Deposit
+- Almacenar IDs de acciones completadas en la `BankAccount`
 
 ## Orden de mensajes
 
@@ -160,7 +158,7 @@ Si un actor manda varios mensajes al mismo destinatario, no van a llegar desorde
 ## Diseñando un modelo de actores
 
 - Imagínate darle una tarea a un grupo de personas y dividirla en partes
-- Considerá que el grupo puede ser muy grand
+- Considerá que el grupo puede ser muy grande
 - Empezá a pensar como las personas asignadas a las diferentes tareas van a comunicarse entre sí
 - Considerá que cada "persona" puede ser fácilmente reemplazable
 - Dibujá un diagrama de cómo se va a dividir la tarea, incluyendo líneas de comunicación
@@ -181,7 +179,7 @@ Si uno quiere hacer un diseño razonable con actores, tiene que pensar por este 
 
 - Se esperan errores en sistemas distribuidos
 - La Programación Defensiva lleva a complejidad y rigidez
-- El modelo de actores aísla fallas: los actores crashean y restartean sin affectar otros
+- El modelo de actores aísla fallas: los actores crashean y restartean sin afectar otros
 
 > En Erlang/Elixir: "fail fast, recover quickly"
 
@@ -194,8 +192,20 @@ Si uno quiere hacer un diseño razonable con actores, tiene que pensar por este 
     - Por ejemplo, en caso del fallo de un hijo, el padre lo puede restartear a manopla
 - No se necesita un manejo de errores complejo dentro de cada actor
 
+## Árboles de supervisión
+Como los actores pueden supervisar a sus hijos:
+- Los supervisores detectan fallos y aplican estrategias de reinicio
+- Los fallos no propagan el caos, sino que se contienen
+- La estructura forma una **jerarquía de supervisión** (en forma de árbol)
+```scala
+val child = context.actorOf(Props[Worker], "worker")
+```
+> Los árboles reflejan modularidad y controlan el alcance de la recuperación
+
 ## Estrategias de supervisión
+
 Las estrategias más comunes incluyen:
+
 - `Restart`: recrear el actor de 0
 - `Resume`: ignorar el fallo y continuar
 - `Stop`: terminar al actor, eliminarlo
@@ -211,8 +221,11 @@ override val supervisorStrategy =
 ```
 
 ## Diseñando en torno a la resiliencia
+
 Tips para diseñar:
+
 - Componer el sistema de actores chiquitos, que puedan crashear tranquilamente
 - Asignar supervision claramente: quién es responsable de quién?
-- Evitar try-catches complejos: ...
-- [Seguir completando cuando Emilio suba las slides que faltan]
+- Evitar try-catches complejos: lo mejor es apoyarse en el esquema de supervisión
+- La estructura sigue límites en base a los posibles fallos
+> La resiliencia es una decisión de arquitectura, no un pensamiento posterior

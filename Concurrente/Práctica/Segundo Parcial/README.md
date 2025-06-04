@@ -5,7 +5,7 @@
 [//]: # (TODO: insertar los links a cada carpeta)
 - [Non-Blocking]() 
 - [Asincronismo]()
-- [Actores]()
+- [Actores](actors)
 ## Notas
 - Actores puede entrar de manera práctica
     - Hay que saber Scala

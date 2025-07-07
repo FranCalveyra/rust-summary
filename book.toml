@@ -1,0 +1,8 @@
+[book]
+authors = ["FranCalveyra"]
+language = "en"
+src = "src"
+title = "Resumen Lenguajes de Programacion"
+
+# Habilitar preprocesador KaTeX con mdbook-katex
+[preprocessor.katex]

@@ -1,4 +1,15 @@
-.idea
 rust-summary.iml
 **/target/
 **/.env
+_site
+.sass-cache
+.jekyll-cache
+.jekyll-metadata
+vendor
+**/.idea/
+.idea/
+**/.env
+**/target/
+**/out/
+.DS_Store
+book
